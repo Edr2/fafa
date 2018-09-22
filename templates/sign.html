@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/signin.css') }}">
+{% endblock %}
+{% block content %}
+  <div class="container sign-container">
+    <div class="form-signin">
+      <form id="user-form">
+        <div class="d-flex flex-column align-items-center mt-3 mb-4">
+          <div class="d-flex align-items-center mb-2">
+            <img class="form-logo mb-1" src="../assets/Logo.png">
+            <h1 class="h3 ml-3 font-weight-normal light-grey">Beagle</h1>
+          </div>
+          <span class="secondary mb-3">
+            Please enter your user information
+          </span>
+        </div>
+        <div class="d-flex flex-column mb-3">
+          <div class="signUp">
+            <input type="text" class="form-control mb-3 form-control-lg" placeholder="Username" name="username">
+          </div>
+
+          <input type="email" class="form-control mb-3 form-control-lg" placeholder="Email address" required="" autofocus="" name="email">
+
+          <div class="password-container">
+            <input type="password" class="form-control mb-3 form-control-lg" placeholder="Password" name="password">      
+            
+            <div class="confirm-container ml-3 signUp mb-3">
+              <input id="confirm" type="password" class="form-control form-control-lg signUp col" placeholder="Confirm" name="password2">
+              <div class="invalid-feedback">
+                Password not same
+              </div>
+            </div>
+          </div>
+          <div id="form-error" class="secondary error"></div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap">
+          <div class="d-flex align-items-center mr-3 mb-3">
+            <input type="checkbox" value="remember-me" class="checkbox-lg mr-2"> Remember me
+          </div>
+          <div class="text-right mb-3">
+            <span href="#" class="link text-primary toggle-forgot-form">Forgot password?</span>
+          </div>
+        </div>
+        <div class="social-buttons d-flex align-items-center justify-content-between mb-3 flex-wrap">
+          <button type="button" class="btn mb-1 btn-facebook social-signIn" data-provider="FacebookAuthProvider">Facebook</button>
+          <button type="button" class="btn mb-1 btn-google social-signIn" data-provider="GoogleAuthProvider">Google+</button>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit" id="user-form-submit">
+          Sign in
+        </button>
+      </form>
+      <form id="forgot-form">
+          <div class="h5 dark-grey mb-3 text-center">
+            Please enter your email.
+          </div>
+          <div>
+            <input type="email" class="form-control mb-3 form-control-lg" placeholder="Email" name="Email">
+          </div>
+          <button class="btn btn-md btn-primary btn-block" type="submit" id="forgot-form-submit">
+              Reset password
+          </button>
+
+          <button class="btn btn-md btn-secondary btn-block toggle-forgot-form" type="button">
+              Back to login
+          </button>
+      </form>
+    </div>
+    <div class="form-toggle-container">
+      <span>
+        Don't have an account?
+      </span>
+      <div class="ml-1 sign-links">
+        <span id="form-toggle" href="#" class="link text-primary">Sign in</span>
+      </div>
+    </div>
+  </div>
+{% endblock %}

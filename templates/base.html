@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% block head %}
+      <title>{% block title %}{% endblock %}</title>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+      <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+      <link rel="stylesheet" href="{{ url_for('static', filename='styles/responsive.css') }}">
+    {% endblock %}
+  </head>
+  <body>
+    <div id="container">{% block content %}{% endblock %}</div>
+
+    {% block scripts %}
+      <!-- Firebase App is always required and must be first -->
+      <script src="https://www.gstatic.com/firebasejs/5.5.0/firebase-app.js"></script>
+
+      <!-- Add additional services that you want to use -->
+      <script src="https://www.gstatic.com/firebasejs/5.5.0/firebase-auth.js"></script>
+      <script>
+        // Initialize Firebase
+        var config = {
+          apiKey: "AIzaSyCDT4MHH6NZjNQNOE0SANSriwYrIDIqvjg",
+          authDomain: "vuejs-43051.firebaseapp.com",
+          databaseURL: "https://vuejs-43051.firebaseio.com",
+          projectId: "vuejs-43051",
+          storageBucket: "vuejs-43051.appspot.com",
+          messagingSenderId: "504937586507"
+        };
+        firebase.initializeApp(config);
+      </script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+      <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+      crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+      <script src="{{ url_for('static', filename='script/main.js') }}"></script>
+      <script src="{{ url_for('static', filename='script/utils.js') }}"></script>
+      <script src="{{ url_for('static', filename='script/signin.js') }}"></script>
+    {% endblock %}
+  </body>
+</html>

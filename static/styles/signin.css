@@ -1,0 +1,81 @@
+.sign-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.form-signin {
+  width: 100%;
+  max-width: 400px;
+  padding: 2em;
+  border-radius : 3px;
+  background : #fff;
+}
+#forgot-form {
+  display: none;
+}
+.form-logo {
+  width: 60px;
+  height: 60px;
+}
+.form-signin .form-control {
+  font-size : 1rem;
+}
+.password-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.confirm-container {
+  width: 100%;
+}
+.checkbox-lg {
+  width: 20px;
+  height: 20px;
+}
+
+.social-buttons .btn {
+  min-width: 40%;
+}
+.btn-google {
+  background-color : #d34836;
+  border-color : #d34836;
+  color : #fff;
+}
+.btn-google:focus {
+  box-shadow: 0 0 0 0.2rem #d348369c;
+}
+.btn-google:hover {
+  background-color: #b12e1d;
+  border-color: #b12e1d;
+}
+.btn-facebook {
+  background-color : #3b5998;
+  border-color : #3b5998;
+  color : #fff;
+}
+.btn-facebook:focus {
+  box-shadow: 0 0 0 0.2rem #4c71bf;
+}
+.btn-facebook:hover {
+  background-color: #26427d;
+  border-color: #26427d;
+}
+.signUp {
+  display: none;
+}
+
+.sign-links {
+  min-width: 60px;
+}
+
+.secret-form-title {
+  margin: 2em auto 2em;
+  padding-bottom: 2em;
+}
+.form-toggle-container {
+  display: flex;
+  align-items: center;
+  margin: 1em auto;
+}
