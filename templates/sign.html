@@ -27,12 +27,7 @@
           <div class="password-container">
             <input type="password" class="form-control mb-3 form-control-lg" placeholder="Password" name="password" required>
             
-            <div class="confirm-container ml-3 signUp mb-3">
-              <input id="confirm" type="password" class="form-control form-control-lg signUp col" placeholder="Confirm" name="password2">
-              <div class="invalid-feedback">
-                Password not same
-              </div>
-            </div>
+            <input id="confirm" type="password" class="form-control mb-3 ml-2 form-control-lg signUp" placeholder="Confirm" name="password2">
           </div>
           <div id="user-form-error" class="secondary error"></div>
         </div>
@@ -70,12 +65,10 @@
       </form>
     </div>
     <div class="form-toggle-container">
-      <span>
-        Don't have an account?
-      </span>
-      <div class="ml-1 sign-links">
-        <span id="form-toggle" href="#" class="link text-primary">Sign in</span>
+        <span class="form-toggle-text">
+          Don't have an account?
+        </span>
+        <button class="link form-toggle ml-1 text-primary">Sign up</button>
       </div>
-    </div>
   </div>
 {% endblock %}

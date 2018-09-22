@@ -1,14 +1,15 @@
-var form = {
+var Auth = firebase.auth(), form = {
   dom : {
     userForm            : $('#user-form'),
     userFormError       : $('#user-form-error'),
-    formToggle          : $('#form-toggle'),
+    formToggle          : $('.form-toggle'),
+    formToggleText      : $('.form-toggle-text'),
+    formToggleContainer : $('.form-toggle-container'),
     formForgot          : $('#forgot-form'),
     socialLogin         : $('.social-signIn'),
     userFormSubmit      : $('#user-form-submit'),
     forgotFormSubmit    : $('#forgot-form-submit'),
-    toggleForgot        : $('.toggle-forgot-form'),
-    formToggleContainer : $('.form-toggle-container')
+    toggleForgot        : $('.toggle-forgot-form')
   },
 
   state : {
@@ -27,17 +28,16 @@ var form = {
     },
 
     setLoading : function() {
-      form.dom.userForm.find('button[type="submit"]').addClass( 'loading' );
-
       form.dom.userFormError.text('');
+      form.dom.userForm.find('button[type="submit"]').addClass( 'loading' );
     }
   },
   init : function() {
+    form.dom.formToggle.click( this.toggleSign );
+    form.dom.toggleForgot.click( this.toggleForgotForm );
+    form.dom.socialLogin.click( this.auth.socialSignIn );
     form.dom.userForm.submit( this.sendUserData );
     form.dom.formForgot.submit( this.auth.resetPassword );
-    form.dom.formToggle.click( this.toggleSign );
-    form.dom.socialLogin.click( this.auth.socialSignIn );
-    form.dom.toggleForgot.click( this.toggleForgotForm );
 
     this.listenAuthChanges();
   },
@@ -51,21 +51,30 @@ var form = {
   },
 
   listenAuthChanges : function() {
-    firebase.auth().onAuthStateChanged( function( user ) {      
+    Auth.onAuthStateChanged( function( user ) {
       if( user ) {
         console.log( user );
 
         if( form.state.request.newUser ) {
+          form.state.request.newUser = false;
+
           user.getIdToken().then( function( idToken ) {
             utils.sendRequest('POST', '/auth', {
               token : idToken
             },
             function() {
-                document.location = "secret";
+                document.location = "step_two";
             })
           });
         }
+        else {
+          if( form.state.request.pendingCred ) {
+            user.linkAndRetrieveDataWithCredential( form.state.request.pendingCred );
+          }
+          // document.location = "/";
+        }
       }
+      form.state.request = {};
       form.state.removeLoading();
     });
   },
@@ -85,8 +94,8 @@ var form = {
 
     if( actionType == 'signUp' )
     {
-      if( !form.validatePassword( arr ) ) {
-        form.state.removeLoading();
+      if( !form.validatePassword( obj ) ) {
+        form.auth.handleErrors({ message : 'Password not same' });
         return;
       }
 
@@ -98,18 +107,55 @@ var form = {
   },
   
   auth : {
-    handleErrors : function( message ) {
-      form.dom.userFormError.text( message );
+    handleErrors : function( error ) {
+      debugger
+      if( error ) {
+        if(error.code === 'auth/account-exists-with-different-credential') {
+          form.state.request.pendingCred = error.credential;
+          // The provider account's email address.
+          form.state.request.email = error.email
+          // Get sign-in methods for this email.
+          Auth.fetchSignInMethodsForEmail( form.state.request.email ).then( function( methods ) {
+            debugger
+            if (methods[0] === 'password') {
+                form.dom.userFormError.text(
+                  'This email is already registered. Please sign in with your password'
+                )
+            }
+            else {
+              // TODO: implement getProviderForProviderId.
+              // FacebookAuthProvider
+              // GoogleAuthProvider
+              var provider = methods[0].indexOf('facebook') !== -1 ? 'facebook' : 'google';
 
-      form.state.removeLoading();
+              form.dom.userFormError.text(`This email is already associated with ${provider} account. Please sign in to link that account.`
+              )
+
+              // At this point, you should let the user know that he already has an account
+              // but with a different provider, and let him validate the fact he wants to
+              // sign in with this provider.
+              // Sign in to provider. Note: browsers usually block popup triggered asynchronously,
+              // so in real scenario you should ask the user to click on a "continue" button
+              // that will trigger the signInWithPopup.
+              // auth.signInWithPopup(provider).then(function(result) {
+              // }
+            }
+            form.state.removeLoading();
+          });
+        }
+        else {
+          form.dom.userFormError.text( error.message );
+          form.state.removeLoading();
+        }
+      }
     },
 
     registerUser : function( obj ) {
-      firebase.auth().createUserWithEmailAndPassword(obj.email, obj.password)
+      Auth.createUserWithEmailAndPassword(obj.email, obj.password)
       .then( user => {
         form.state.request.newUser = user.additionalUserInfo.isNewUser;
 
-        firebase.auth().currentUser.updateProfile({
+        Auth.currentUser.updateProfile({
             displayName: obj.username
         })
       })
@@ -117,24 +163,25 @@ var form = {
     },
     
     emailLogin : function( obj ) {
-      firebase.auth().signInWithEmailAndPassword(obj.email, obj.password)
+      Auth.signInWithEmailAndPassword(obj.email, obj.password)
       .catch( form.auth.handleErrors );    
     },
 
     socialSignIn : function( event ) {
       var provider = new firebase.auth[this.dataset.provider]();
 
-      firebase.auth().signInWithPopup(provider).then(function(result) {
-        form.state.removeLoading();
-        var user = result.user;
-      })
-      .catch( form.auth.handleErrors );
+      form.state.setLoading();
+
+      Auth.signInWithPopup(provider).then( function( response ) {
+        debugger
+        console.log( response );
+      }).catch( form.auth.handleErrors );
     },
 
     resetPassword : function( event ) {
       event.preventDefault();
 
-      firebase.auth().sendPasswordResetEmail( form.dom.formForgot.find('[type="email"]').val() ).then( function( response ) {
+      Auth.sendPasswordResetEmail( form.dom.formForgot.find('[type="email"]').val() ).then( function( response ) {
         // Email sent.
         debugger
       })
@@ -145,37 +192,18 @@ var form = {
   toggleSign : function( e ) {
     form.state.toggleState();
 
-    let key = form.state.signUp ? 'Sign up' : 'Sign in';
-    
-    form.dom.userFormSubmit.text( key );
-    form.dom.formToggle.text( key );
+    form.dom.userFormSubmit.text( form.state.signUp ? 'Sign up' : 'Sign in' );
+    form.dom.formToggle.text( !form.state.signUp ? 'Sign up' : 'Sign in' );
+    form.dom.formToggleText.text( !form.state.signUp ? 'Don\'t have an account?' : 'Already registered?' );
 
     ['signUp', 'signIn'].forEach( function( className ) {
       $(`.${className}`).slideToggle( 300 );
     })
   },
 
-  validatePassword : function( array )
+  validatePassword : function( obj )
   {
-    let password, confirm, $confirm = $('#confirm');
-
-    array.forEach( function( field ) {
-      if( field.name == 'password' ) {
-        password = field.value;
-      }
-      if( field.name == 'password2' ) {
-        confirm = field.value
-      }
-    });
-
-    if( password !== confirm ) {
-      $confirm.addClass('is-invalid');
-    }
-    else {
-      $confirm.removeClass('is-invalid');
-    }
-
-    return password === confirm;
+    return obj.password === obj.password2;
   },
 
 }
