@@ -1,5 +1,6 @@
 lib/
 venv/
+credentials/
 
 #vim
 *.swp
