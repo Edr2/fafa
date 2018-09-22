@@ -1,0 +1,33 @@
+@media screen and ( min-width: 768px ) {
+  .sidebar-sticky.sidebar-sticky.hidden {
+    margin-left: 0;
+    position: relative;
+  }
+  .navbar.navbar {
+    padding: 0.5em 2em;
+  }
+  .user-main.user-main {
+    padding: 2em;
+  } 
+  .user-top.user-top {
+    margin-bottom: 3em;
+  }
+  .user-top-section.user-top-section {
+    padding: 1em 2em 3em;
+  }
+  .about-page.about-page {
+    margin: 1em;
+  }
+  .sidebar-subheader.sidebar-subheader {
+    padding: 1em 2em;
+  }
+  .navbar-brand.navbar-brand {
+    margin-right: 0;
+  }
+  .current-page.current-page {
+    display: block;
+  }
+  .sidebar-toggle.sidebar-toggle {
+    display : none;
+  }
+}
