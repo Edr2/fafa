@@ -7,10 +7,9 @@ var app = {
   },
   toggleUerDialog : function() {
     this.$userDialog.fadeToggle( 300 );
-  }
+  },
 }
 
 $( document ).ready( function()
 {
-  alert('3')
 })

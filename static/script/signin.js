@@ -15,7 +15,8 @@ var form = {
     signUp : false,
     signIn : true,
     provider : false,
-
+    request : {},
+    
     toggleState : function() {
       this.signUp = ! this.signUp;
       this.signIn = ! this.signIn;
@@ -50,14 +51,22 @@ var form = {
   },
 
   listenAuthChanges : function() {
-    firebase.auth().onAuthStateChanged(function(user) {
+    firebase.auth().onAuthStateChanged( function( user ) {      
+      if( user ) {
+        console.log( user );
+
+        if( form.state.request.newUser ) {
+          user.getIdToken().then( function( idToken ) {
+            utils.sendRequest('POST', '/auth', {
+              token : idToken
+            },
+            function() {
+                document.location = "secret";
+            })
+          });
+        }
+      }
       form.state.removeLoading();
-      if (user) {
-        console.log('user data : ', user);
-      }
-      else {
-        console.log('logout');
-      }
     });
   },
 
@@ -89,9 +98,7 @@ var form = {
   },
   
   auth : {
-    handleErrors : function( message )
-    {
-      debugger
+    handleErrors : function( message ) {
       form.dom.userFormError.text( message );
 
       form.state.removeLoading();
@@ -99,6 +106,13 @@ var form = {
 
     registerUser : function( obj ) {
       firebase.auth().createUserWithEmailAndPassword(obj.email, obj.password)
+      .then( user => {
+        form.state.request.newUser = user.additionalUserInfo.isNewUser;
+
+        firebase.auth().currentUser.updateProfile({
+            displayName: obj.username
+        })
+      })
       .catch( form.auth.handleErrors );
     },
     
