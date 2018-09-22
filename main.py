@@ -1,21 +1,16 @@
 import requests_toolbelt.adapters.appengine
 requests_toolbelt.adapters.appengine.monkeypatch()
-
-import logging
-from datetime import timedelta
-
-from flask import Flask, Blueprint, redirect, jsonify, request, session, render_template, url_for, make_response
+from flask import Flask
 import flask_cors
-
-import google.auth.transport.requests
-import google.oauth2.id_token
-
-
-import firebase_admin
 from firebase_admin import credentials
+import firebase_admin
+import google.auth.transport.requests
 from page import page
 
 
+cred = credentials.Certificate('credentials/serviceAccountKey.json')
+# Initialize the app with a service account, granting admin privileges
+fire_app = firebase_admin.initialize_app(cred)
 
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
@@ -40,20 +35,9 @@ static_dir = '/static'
 app = Flask(__name__, static_url_path=static_dir)
 flask_cors.CORS(app)
 
-cred = credentials.Certificate('credentials/serviceAccountKey.json')
-# Initialize the app with a service account, granting admin privileges
-fire_app = firebase_admin.initialize_app(cred)
-
-
-
-
-
 
 
 app.register_blueprint(page)
-
-
-
 
 # app = create_app()
 # app.run()
