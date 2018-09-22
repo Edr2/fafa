@@ -12,4 +12,5 @@ var app = {
 
 $( document ).ready( function()
 {
+  alert('3')
 })

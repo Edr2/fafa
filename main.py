@@ -21,7 +21,7 @@
 
 import logging
 
-from flask import Flask, jsonify, request, session, render_template
+from flask import Flask, jsonify, request, session, render_template, redirect
 import flask_cors
 from google.appengine.ext import ndb
 import google.auth.transport.requests
@@ -37,6 +37,19 @@ static_dir = '/static'
 
 app = Flask(__name__, static_url_path=static_dir)
 flask_cors.CORS(app)
+
+
+@app.after_request
+def add_header(r):
+    """
+    Add headers to both force latest IE rendering engine or Chrome Frame,
+    and also to cache the rendered page for 10 minutes.
+    """
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
+    r.headers['Cache-Control'] = 'public, max-age=0'
+    return r
 
 
 @app.route('/', methods=['GET'])
