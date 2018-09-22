@@ -24,18 +24,22 @@ var Auth = firebase.auth(), form = {
     },
 
     removeLoading : function() {
-      form.dom.userForm.find('button[type="submit"]').removeClass( 'loading' );
+      form.dom.userFormSubmit.removeClass( 'loading' );
     },
 
     setLoading : function() {
       form.dom.userFormError.text('');
-      form.dom.userForm.find('button[type="submit"]').addClass( 'loading' );
+      form.dom.userFormSubmit.addClass( 'loading' );
     }
   },
   init : function() {
+    if( form.dom.userForm.length == 0 ) {
+      return;
+    }
+
     form.dom.formToggle.click( this.toggleSign );
     form.dom.toggleForgot.click( this.toggleForgotForm );
-    form.dom.socialLogin.click( this.auth.socialSignIn );
+    form.dom.socialLogin.click( this.auth.sendUserData );
     form.dom.userForm.submit( this.sendUserData );
     form.dom.formForgot.submit( this.auth.resetPassword );
 
@@ -53,92 +57,81 @@ var Auth = firebase.auth(), form = {
   listenAuthChanges : function() {
     Auth.onAuthStateChanged( function( user ) {
       if( user ) {
-        console.log( user );
+        let location = form.state.request.newUser ? 'step_two' : '/';
+        let remember = form.state.request.userData && form.state.request.userData.remember && form.state.request.userData.remember == 'on' ? true : false;
 
-        if( form.state.request.newUser ) {
-          form.state.request.newUser = false;
+        let authRequestCallback = function() {
+          document.location = location;
+        }
 
-          user.getIdToken().then( function( idToken ) {
-            utils.sendRequest('POST', '/auth', {
-              token : idToken
-            },
-            function() {
-                document.location = "step_two";
-            })
-          });
+        if( form.state.request.pendingCred ) {
+          user.linkAndRetrieveDataWithCredential( form.state.request.pendingCred );
         }
-        else {
-          if( form.state.request.pendingCred ) {
-            user.linkAndRetrieveDataWithCredential( form.state.request.pendingCred );
-          }
-          // document.location = "/";
-        }
+
+        user.getIdToken().then( function( idToken ) {
+          utils.sendRequest('POST', '/auth', {
+            token    : idToken,
+            remember : remember
+          },
+          authRequestCallback)
+        });
       }
-      form.state.request = {};
-      form.state.removeLoading();
     });
   },
 
   sendUserData : function( event ) {
     event.preventDefault();
-    
-    let obj = {};
+    form.state.setLoading();
+
+    if( this.dataset.provider ) {
+      form.auth.socialSignIn();
+      return;
+    }
+
+    let userData = {};
     let arr = form.dom.userForm.serializeArray();
     let actionType = form.state.signUp ? 'signUp' : 'signIn';
-
-    form.state.setLoading();
     
     arr.forEach( function( field ) {
-      obj[field.name] = field.value;
+      userData[field.name] = field.value;
     });
+
+    form.state.request.userData = userData;
 
     if( actionType == 'signUp' )
     {
-      if( !form.validatePassword( obj ) ) {
+      if( userData.password !== userData.password2 ) {
         form.auth.handleErrors({ message : 'Password not same' });
         return;
       }
 
-      form.auth.registerUser( obj );
+      form.auth.registerUser( userData );
     }
     else {
-      form.auth.emailLogin( obj );
+      form.auth.emailLogin( userData );
     }
   },
   
   auth : {
     handleErrors : function( error ) {
-      debugger
       if( error ) {
-        if(error.code === 'auth/account-exists-with-different-credential') {
+        if(error.code === 'auth/account-exists-with-different-credential')
+        {
           form.state.request.pendingCred = error.credential;
-          // The provider account's email address.
+
           form.state.request.email = error.email
-          // Get sign-in methods for this email.
+
           Auth.fetchSignInMethodsForEmail( form.state.request.email ).then( function( methods ) {
-            debugger
             if (methods[0] === 'password') {
-                form.dom.userFormError.text(
-                  'This email is already registered. Please sign in with your password'
-                )
+              form.dom.userFormError.text(
+                'This email is already registered. Please sign in with your password'
+              )
             }
             else {
-              // TODO: implement getProviderForProviderId.
-              // FacebookAuthProvider
-              // GoogleAuthProvider
               var provider = methods[0].indexOf('facebook') !== -1 ? 'facebook' : 'google';
 
               form.dom.userFormError.text(`This email is already associated with ${provider} account. Please sign in to link that account.`
               )
-
-              // At this point, you should let the user know that he already has an account
-              // but with a different provider, and let him validate the fact he wants to
-              // sign in with this provider.
-              // Sign in to provider. Note: browsers usually block popup triggered asynchronously,
-              // so in real scenario you should ask the user to click on a "continue" button
-              // that will trigger the signInWithPopup.
-              // auth.signInWithPopup(provider).then(function(result) {
-              // }
             }
             form.state.removeLoading();
           });
@@ -150,32 +143,23 @@ var Auth = firebase.auth(), form = {
       }
     },
 
-    registerUser : function( obj ) {
-      Auth.createUserWithEmailAndPassword(obj.email, obj.password)
-      .then( user => {
-        form.state.request.newUser = user.additionalUserInfo.isNewUser;
-
-        Auth.currentUser.updateProfile({
-            displayName: obj.username
-        })
-      })
+    registerUser : function( userData ) {
+      Auth.createUserWithEmailAndPassword( userData.email, userData.password )
+      .then( form.auth.handleNewUser )
       .catch( form.auth.handleErrors );
     },
     
-    emailLogin : function( obj ) {
-      Auth.signInWithEmailAndPassword(obj.email, obj.password)
+    emailLogin : function( userData ) {
+      Auth.signInWithEmailAndPassword( userData.email, userData.password )
       .catch( form.auth.handleErrors );    
     },
 
-    socialSignIn : function( event ) {
+    socialSignIn : function( provider ) {
       var provider = new firebase.auth[this.dataset.provider]();
 
-      form.state.setLoading();
-
-      Auth.signInWithPopup(provider).then( function( response ) {
-        debugger
-        console.log( response );
-      }).catch( form.auth.handleErrors );
+      Auth.signInWithPopup( provider )
+      .then( form.auth.handleNewUser )
+      .catch( form.auth.handleErrors );
     },
 
     resetPassword : function( event ) {
@@ -186,6 +170,18 @@ var Auth = firebase.auth(), form = {
         debugger
       })
       .catch( form.auth.handleErrors );
+    },
+
+    handleNewUser : function( user ) {
+      let userName = $('#user-form [name="username"]').val();
+
+      form.state.request.newUser = user.additionalUserInfo.isNewUser;
+
+      if( userName ) {
+        Auth.currentUser.updateProfile({
+            displayName: userName
+        });
+      }
     }
   },
 
@@ -200,12 +196,6 @@ var Auth = firebase.auth(), form = {
       $(`.${className}`).slideToggle( 300 );
     })
   },
-
-  validatePassword : function( obj )
-  {
-    return obj.password === obj.password2;
-  },
-
 }
 
 $( document ).ready( function()
