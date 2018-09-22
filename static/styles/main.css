@@ -239,7 +239,12 @@ main {
   white-space: nowrap;
 }
 .link {
-  cursor : pointer;
+  cursor: pointer;
+  box-shadow: none;
+  border: 0;
+  outline: none !important;
+  display: inline-block;
+  background: none;
 }
 .link:hover {
   text-decoration: underline;
