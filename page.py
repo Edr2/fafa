@@ -1,11 +1,23 @@
 import logging
 import requests
-from flask import Blueprint, request, make_response, render_template
+from flask import Blueprint, request, make_response, render_template, redirect, url_for
 from datetime import timedelta
 from google.appengine.ext import ndb
 from auth import verify_id_token, create_session_cookie, verify_session_cookie
 
 page = Blueprint('page', __name__, template_folder='templates')
+
+
+@page.route('/', methods=['GET'])
+def info_page():
+    """Returns a list of notes added by the current Firebase user."""
+    try:
+        cookie = request.cookies.get('NID')
+        token = verify_session_cookie(cookie)
+        if token:
+            return render_template('index.html')
+    except:
+        return 'Error'
 
 
 @page.route('/auth', methods=['POST'])
@@ -48,27 +60,6 @@ def step_two():
 def login():
     """Returns a list of notes added by the current Firebase user."""
     return render_template('sign.html')
-
-
-@page.route('/', methods=['GET'])
-def info_page():
-    """Returns a list of notes added by the current Firebase user."""
-    # return "DAA"
-    # Verify Firebase auth.
-    # [START gae_python_verify_token]
-    if 'Authorization' not in request.headers:
-        # return 'fuck the police'
-        return redirect(url_for('page.login'))#render_template('sign.html')
-    id_token = request.headers['Authorization'].split(' ').pop()
-    claims = google.oauth2.id_token.verify_firebase_token(
-        id_token, HTTP_REQUEST)
-    if not claims:
-        return 'Unauthorized', 401
-    # [END gae_python_verify_token]
-
-    notes = query_database(claims['sub'])
-
-    return jsonify(notes)
 
 
 class Note(ndb.Model):

@@ -1,6 +1,8 @@
 lib/
 venv/
 credentials/
+.vscode/
+.idea/
 
 #vim
 *.swp
