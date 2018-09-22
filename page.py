@@ -23,12 +23,10 @@ def step_two():
         cookie = request.cookies.get('NID')
         token = verify_session_cookie(cookie)
         if token:
-            return render_template('st')
-        resp = make_response()
-        resp.set_cookie('NID', cookie)
+            return render_template('step_two.html')
     except:
         return 'Error'
-    return resp
+    return False
 
 
     if 'Authorization' not in request.headers:
