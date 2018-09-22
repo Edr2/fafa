@@ -47,7 +47,7 @@ def main_page():
     # [START gae_python_verify_token]
     if 'Authorization' not in request.headers:
         # return 'fuck the police'
-        return render_template('index.html')
+        return render_template('sign.html')
     id_token = request.headers['Authorization'].split(' ').pop()
     claims = google.oauth2.id_token.verify_firebase_token(
         id_token, HTTP_REQUEST)
