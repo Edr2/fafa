@@ -16,8 +16,8 @@ def info_page():
         token = verify_session_cookie(cookie)
         if token:
             return render_template('index.html')
-    except:
-        return 'Error'
+    except ValueError:
+        return redirect(url_for('page.login'))
 
 
 @page.route('/auth', methods=['POST'])
