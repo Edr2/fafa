@@ -1,9 +1,10 @@
 var utils = {
-  sendRequest : function( method, url, data, callback ) {
+  sendRequest : function( method, url, data, callback, errorHandler ) {
     $.ajax( url, {
       'method' : method,
-      'data' : data,
-      success : callback
-    });
+      'data' : data
+    })
+    .done( callback )
+    .fail( errorHandler );
   }
 }
