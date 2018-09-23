@@ -4,7 +4,7 @@
   justify-content: center;
   flex-direction: column;
 }
-.form-signin {
+.form-container {
   width: 100%;
   max-width: 400px;
   padding: 2em;
@@ -19,7 +19,7 @@
   width: 60px;
   height: 60px;
 }
-.form-signin .form-control {
+.form-container .form-control {
   font-size : 1rem;
 }
 .password-container {

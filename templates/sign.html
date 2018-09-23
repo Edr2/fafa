@@ -1,12 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Sign in{% endblock %}
-{% block head %}
-    {{ super() }}
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/signin.css') }}">
-{% endblock %}
 {% block content %}
   <div class="container sign-container">
-    <div class="form-signin">
+    <div class="form-container">
       <form id="user-form">
         <div class="d-flex flex-column align-items-center mt-3 mb-4">
           <div class="d-flex align-items-center mb-2">
