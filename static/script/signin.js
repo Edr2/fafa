@@ -1,16 +1,15 @@
 var Auth = firebase.auth(), form = {
   dom : {
     userForm            : $('#user-form'),
-    userFormError       : $('#user-form-error'),
     userFormSubmit      : $('#user-form-submit'),
     socialLogin         : $('.social-login'),
     formToggle          : $('.form-toggle'),
     formToggleText      : $('.form-toggle-text'),
     formToggleContainer : $('.form-toggle-container'),
-    formForgot          : $('#forgot-form'),
+    forgotForm          : $('#forgot-form'),
     toggleForgot        : $('.toggle-forgot-form'),
     forgotFormSubmit    : $('#forgot-form-submit'),
-    formSecret          : $('#secret-form')
+    secretForm          : $('#secret-form')
   },
 
   state : {
@@ -18,41 +17,47 @@ var Auth = firebase.auth(), form = {
     signIn : true,
     provider : false,
     request : {},
-    
+    currentForm : 'secretForm',
+
     toggleState : function() {
       this.signUp = ! this.signUp;
       this.signIn = ! this.signIn;
     },
 
     removeLoading : function() {
-      form.dom.userFormSubmit.removeClass( 'loading' );
+      $('button.loading').removeClass( 'loading' );
     },
 
-    setLoading : function() {
-      form.dom.userFormError.text('');
-      form.dom.userFormSubmit.addClass( 'loading' );
+    setLoading : function( target ) {
+      form.dom[form.state.currentForm].find('.error').text('');
+
+      $( target ).addClass( 'loading' );
     }
   },
   init : function() {
-    form.dom.formSecret.submit( this.auth.sendUserSecret );
+    form.dom.secretForm.submit( this.auth.sendUserSecret );
     
     if( form.dom.userForm.length > 0 ) {
+      form.state.currentForm = 'userForm';
+
       form.dom.formToggle.click( this.toggleSign );
       form.dom.toggleForgot.click( this.toggleForgotForm );
-      form.dom.socialLogin.click( this.sendUserData );
-      form.dom.userForm.submit( this.sendUserData );
-      form.dom.formForgot.submit( this.auth.resetPassword );
+      form.dom.socialLogin.click( this.handleUserData );
+      form.dom.userForm.submit( this.handleUserData );
+      form.dom.forgotForm.submit( this.handleUserData );
   
       this.listenAuthChanges();
     }
   },
 
   toggleForgotForm : function() {
-    form.dom.formForgot.find('input[type="email"]').val( form.dom.userForm.find('input[type="email"]').val() );
+    form.dom.forgotForm.find('input[type="email"]').val( form.dom.userForm.find('input[type="email"]').val() );
+
+    form.state.currentForm = form.dom.userForm.is(':visible') ? 'forgotForm' : 'userForm';
 
     form.dom.userForm.toggle( 200 );
     form.dom.formToggleContainer.toggle( 200 );
-    form.dom.formForgot.toggle( 200 );
+    form.dom.forgotForm.toggle( 200 );
   },
 
   listenAuthChanges : function() {
@@ -63,26 +68,29 @@ var Auth = firebase.auth(), form = {
     });
   },
 
-  sendUserData : function( event ) {
+  handleUserData : function( event ) {
+    let userData = {};
+
     event.preventDefault();
-    form.state.setLoading();
+    form.state.setLoading( event.target );
 
     if( event.target.dataset.provider ) {
       form.auth.socialSignIn( event.target.dataset.provider );
       return;
     }
 
-    let userData = {};
-    let arr = form.dom.userForm.serializeArray();
-    let actionType = form.state.signUp ? 'signUp' : 'signIn';
+    if( event.target.dataset.reset ) {
+      form.auth.resetPassword( event );
+      return;
+    }
     
-    arr.forEach( function( field ) {
+    form.dom.userForm.serializeArray().forEach( function( field ) {
       userData[field.name] = field.value;
     });
 
     form.state.request.userData = userData;
 
-    if( actionType == 'signUp' )
+    if( form.state.signUp )
     {
       if( userData.password !== userData.password2 ) {
         form.auth.handleErrors({ message : 'Password not same' });
@@ -107,21 +115,21 @@ var Auth = firebase.auth(), form = {
 
           Auth.fetchSignInMethodsForEmail( form.state.request.email ).then( function( methods ) {
             if (methods[0] === 'password') {
-              form.dom.userFormError.text(
+              form.dom[form.state.currentForm].find('.error').text(
                 'This email is already registered. Please sign in with your password'
               )
             }
             else {
               var provider = methods[0].indexOf('facebook') !== -1 ? 'facebook' : 'google';
 
-              form.dom.userFormError.text(`This email is already associated with ${provider} account. Please sign in to link that account.`
+              form.dom[form.state.currentForm].find('.error').text(`This email is already associated with ${provider} account. Please sign in to link that account.`
               )
             }
             form.state.removeLoading();
           });
         }
         else {
-          form.dom.userFormError.text( error.message );
+          form.dom[form.state.currentForm].find('.error').text( error.message || error.statusText );
           form.state.removeLoading();
         }
       }
@@ -150,7 +158,7 @@ var Auth = firebase.auth(), form = {
     resetPassword : function( event ) {
       event.preventDefault();
 
-      Auth.sendPasswordResetEmail( form.dom.formForgot.find('[type="email"]').val() ).then( function( response ) {
+      Auth.sendPasswordResetEmail( form.dom.forgotForm.find('[type="email"]').val() ).then( function( response ) {
         // Email sent.
         debugger
       })
@@ -176,15 +184,33 @@ var Auth = firebase.auth(), form = {
           token    : idToken,
           remember : remember
         },
-        function() {
-          document.location = '/';
-        })
+        function( response ) {
+          if( response.status == 'success' ) {
+            document.location = '/';
+          }
+        },
+        form.auth.handleErrors );
       });
     },
 
     sendUserSecret : function( event ) {
-      debugger
-      form.dom.formSecret;
+      event.preventDefault();
+      let userData = {};
+
+      form.dom.secretForm.serializeArray().forEach( function( field ) {
+        userData[field.name] = field.value;
+      });
+
+      utils.sendRequest('POST', '/step_two', {
+        token  : userData.token,
+        secret : userData.secret
+      },
+      function( response ) {
+        if( repsonse.status == 'success' ) {
+          document.location = '/';
+        }
+      },
+      form.auth.handleErrors );
     }
   },
 
