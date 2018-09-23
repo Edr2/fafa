@@ -1,42 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Flask gae app{% endblock %}
 {% block content %}
-  <nav class="navbar navbar-expand navbar-light fixed-top dark-grey">
-    <div class="navbar-brand">
-      <div class="d-flex align-items-center">
-        <img class="mb-1" src="{{ url_for('static', filename='assets/Logo.png') }}">
-        <h1 class="h3 ml-3 font-weight-normal light-grey">Beagle</h1>
-      </div>
-    </div>
-    <div class="mr-auto h5 mb-0 current-page">
-      Current Page
-    </div>
-    <div class="sidebar-toggle button button-dark" onclick="app.toggleSidebar()">
-      <i class="fas fa-bars"></i>
-    </div>
-    <div class="user-logo">
-      <img class="mb-1" src="{{ url_for('static', filename='assets/UserIcon.png') }}" id="user-logo">
-      <div class="user-dropdown-container" id="user-dialog">
-        <div class="user-dropdown">
-          <div class="dropdown-header">
-            {{ username }}
-          </div>
-          <a class="dropdown-element button button-light">
-            <i class="fas fa-user"></i>
-            Account
-          </a>
-          <a class="dropdown-element button button-light">
-            <i class="fas fa-wrench"></i>
-            Settings
-          </a>
-          <a href="/logout" class="dropdown-element button button-light">
-            <i class="fas fa-power-off"></i>
-            Logout
-          </a>
-        </div>
-      </div>
-    </div>
-  </nav>
+  {% block header %}
+  {% endblock %}
   <main role="main">
     <div class="row main-container">
       <div class="col sidebar-sticky dark-grey hidden" id="sidebar">
@@ -47,27 +13,39 @@
           <ul class="sidebar-section">
             <li class="sidebar-item button button-dark">
               <i class="fas fa-home"></i>
-              Dashboard
+              <span class="item-text">
+                Dashboard
+              </span>
             </li>
             <li class="sidebar-item button button-dark">
               <i class="fab fa-uikit"></i>
-              UI
+              <span class="item-text">
+                UI
+              </span>
             </li>
             <li class="sidebar-item button button-dark">
               <i class="fas fa-chart-pie"></i>
-              Charts
+              <span class="item-text">
+                Charts
+              </span>
             </li>
             <li class="sidebar-item button button-dark">
               <i class="fas fa-toggle-on"></i>
-              Forms
+              <span class="item-text">
+                Forms
+              </span>
             </li>
             <li class="sidebar-item button button-dark">
               <i class="fas fa-table"></i>
-              Tables
+              <span class="item-text">
+                Tables
+              </span>
             </li>
             <li class="sidebar-item button button-dark">
               <i class="fas fa-layer-group"></i>
-              Pages
+              <span class="item-text">
+                Pages
+              </span>
             </li>
           </ul>
         </div>
@@ -78,92 +56,58 @@
           <ul class="sidebar-section">
             <li class="sidebar-item button button-dark">
               <i class="fas fa-home"></i>
-              Dashboard
+              <span class="item-text">
+                Dashboard
+              </span>
             </li>
             <li class="sidebar-item button button-dark">
               <i class="fab fa-uikit"></i>
-              UI
+              <span class="item-text">
+                UI
+              </span>
             </li>
             <li class="sidebar-item button button-dark">
               <i class="fas fa-chart-pie"></i>
-              Charts
+              <span class="item-text">
+                Charts
+              </span>
             </li>
             <li class="sidebar-item button button-dark">
               <i class="fas fa-toggle-on"></i>
-              Forms
+              <span class="item-text">
+                Forms
+              </span>
             </li>
             <li class="sidebar-item button button-dark">
               <i class="fas fa-table"></i>
-              Tables
+              <span class="item-text">
+                Tables
+              </span>
             </li>
             </li>
           </ul>
         </div>
       </div>
       <div class="col">
-        <div class="about-page">
-          <div class="user-top">
-            <div class="user-cover-photo">
-              <div class="image-container">
-                <img src="https://images.unsplash.com/photo-1537387788952-cffe9f8d3090?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=a289b6b0b00fecc6c215191e6eaf3eb7&auto=format&fit=crop&w=1050&q=80" alt="">
-              </div> 
-            </div>
-            <div class="user-top-section">
-              <div class="user-profile-photo loading" id="user-profile-photo">
-                <img src="" alt="User profile photo">
-                <div class="user-profile-upload">
-                  <div class="upload-button" id="upload-button">
-                    <i class="fas fa-file-upload"></i>
-                  </div>
-                </div>
-              </div>
-              <div class="user-top-info">
-                <h2 class="user-name h3">
-                  {{ username }}
-                </h2>
-                <div class="secondary">
-                  User sub data
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="user-main">
-            <div class="d-flex flex-column user-main-header">
-              <h3 class="dark-grey">
-                About me
-              </h3>
-              <span class="secondary dark-grey">
-                Lorem ipsum dolor sit emit. Lorem ipsum dolor sit emit. Lorem ipsum dolor sit emit. Lorem ipsum dolor sit emit. Lorem ipsum dolor sit emit.
-              </span>
-            </div>
-            <div class="user-main-grid">
-              <div class="row mx-0 py-3 d-flex flex-wrap">
-                <span class="col d-flex align-items-start pl-0 py-1">
-                  Token
-                </span>
-                <span class="col d-flex align-items-center pl-0 py-1">
-                  User Token
-                </span>
-              </div>
-              <div class="row mx-0 py-3 d-flex flex-wrap">
-                <span class="col d-flex align-items-start pl-0 py-1">
-                  Secret
-                </span>
-                <span class="col d-flex align-items-center pl-0 py-1">
-                  User Secret
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {% block mainContent %}
+        {% endblock %}
       </div>
     </div>
   </main>
   <div class="upload-menu" id="upload-menu">
     <div class="upload-background" id="upload-background"></div>
-    <div class="upload-form form-container" id="upload-form">
-      <form>
-          <input type="file" id="upload-photo" class="form-control mb-3 form-control-lg" placeholder="Upload your photo">
+    <div class="upload-form form-container">
+      <form id="upload-form">
+          <button id="file-select" class="upload-file-select" type="button">
+            <div class="upload-button">
+              <i class="fas fa-file-upload"></i>
+            </div>
+            <span class="secondary" id="file-name">
+              Drag files here
+            </span>
+          </button>
+          <input class="hidden-input" accept="image/*" id="upload-input" type="file">
+
           <button class="btn btn-md btn-primary btn-block" type="submit">
             Upload photo
           </button>

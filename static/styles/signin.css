@@ -77,3 +77,6 @@
   align-items: center;
   margin: 1em auto;
 }
+.always-ltr {
+  direction: ltr;
+}
