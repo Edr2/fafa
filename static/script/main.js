@@ -1,103 +1,166 @@
+var utils = {
+  sendRequest : function( method, url, data, callback, errorHandler ) {
+    $.ajax( url, {
+      'method' : method,
+      'data' : data
+    })
+    .done( callback )
+    .fail( errorHandler );
+  }
+}
 var app = {
-  dom : {
-    sidebar          : $('#sidebar'),
-    userDialog       : $('#user-dialog'),
-    userLogo         : $('#user-logo'),
-    userProfile      : $('#user-profile-photo'),
-    uploadButton     : $('#upload-button'),
-    uploadMenu       : $('#upload-menu'),
-    uploadForm       : $('#upload-form'),
-    uploadInput      : $('#upload-photo'),
-    uploadBackground : $('#upload-background'),
-    userProfilePhoto : $('#user-profile-photo img'),
-  },
   state : {
     storageRef : firebase.storage().ref(),
-    file : {}
+    file : false
   },
 
+ /**
+  * Toggles sidebar visibility
+  */
   toggleSidebar : function() {
-    this.sidebar.toggleClass('hidden');
+    $('#sidebar').toggleClass('hidden');
   },
+
+    /**
+   * Toggles user dialog visibility
+   */
   toggleUserDialog : function() {
-    this.userDialog.fadeToggle( 300 );
+    $('#user-dialog').fadeToggle( 300 );
   },
 
+ /**
+  * Main function that launches on page init
+  */
   init : function() {
-    app.dom.uploadButton.click( this.upload.toggleUploadMenu );
-    app.dom.uploadForm.submit( this.upload.uploadPhoto );
-    app.dom.uploadInput.change( this.upload.fileChange );
-    app.dom.uploadBackground.click( this.upload.toggleUploadMenu );
-    app.dom.userLogo.click( this.toggleUserDialog );
+    let fileSelect = $('#file-select');
 
+    $('#user-logo').click( this.toggleUserDialog );
+    $('#logout').click( this.logout );
+    $('#sidebar-toggle').click( app.toggleSidebar );
+    $('#upload-form').submit( this.upload.uploadPhoto );
+    $('#upload-input').change( this.upload.fileChange );
+    $('#upload-button').click( this.upload.toggleUploadMenu );
+    $('#upload-background').click( this.upload.toggleUploadMenu );
+
+    // init handlers for drag-n-drop functionality
+    fileSelect.on( 'dragenter' , app.upload.drag );
+    fileSelect.on( 'dragover'  , app.upload.drag );
+    fileSelect.on( 'drop'      , app.upload.drop );
+
+    // trigger click for hidden input
+    fileSelect.find('.upload-button').click( function( event ) {
+      $('#upload-input').trigger('click')
+    });
+
+    // launch listener on authentication status changes
     this.listenAuthChanges();
   },
 
+ /**
+  * Object that contains all methods for uplaod functionality
+  */
   upload : {
-    toggleUploadMenu : function( event ) {
-      app.dom.uploadMenu.fadeToggle( 200 );
+
+   /**
+    * Handler for dragenter/ dragover 
+    */
+    drag : function( event ) {
+      event.stopPropagation();
+      event.preventDefault();
     },
 
+   /**
+    * Main method, launches when user drops file
+    */
+    drop : function( event ) {
+      // prevent default browser behaviour( opening file )
+      event.stopPropagation();
+      event.preventDefault();
+
+      app.state.file = event.originalEvent.dataTransfer.files[0];
+      $('#file-name').text( app.state.file.name );
+    
+      app.upload.uploadPhoto();
+    },
+
+   /**
+    * Toggle upload menu visibility
+    */
+    toggleUploadMenu : function( event ) {
+      $('#upload-menu').fadeToggle( 200 );
+    },
+
+   /**
+    * Main method for photo uploading
+    */
     uploadPhoto : function( event ) {
       event.preventDefault();
       
-      var uploadTask = app.state.storageRef.child(`users/${Auth.currentUser.uid}`).put( app.state.file );
+      if( !app.state.file ) {
+        return;
+      }
 
-      uploadTask.on( 'state_changed',
-        function( snapshot ) {
-          var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      // init upload animation
+      app.upload.toggleUploadAnimation();
 
-          switch (snapshot.state) {
-            case firebase.storage.TaskState.PAUSED: // or 'paused'
-              console.log('Upload is paused');
-              break;
-            case firebase.storage.TaskState.RUNNING: // or 'running'
-              console.log('Upload is running');
-              break;
-          }
-        }, function(error) {
-        // A full list of error codes is available at
-        // https://firebase.google.com/docs/storage/web/handle-errors
-        switch (error.code) {
-          case 'storage/unauthorized':
-            console.log( error );
-            // User doesn't have permission to access the object
-            break;
-          case 'storage/canceled':
-            console.log( error );
-            // User canceled the upload
-            break;
-          case 'storage/unknown':
-            console.log( error );
-            // Unknown error occurred, inspect error.serverResponse
-            break;
-        }
-      }, function() {
+      // start uploading
+      app.state.storageRef.child(`users/${Auth.currentUser.uid}`).put( app.state.file )
+      .then( function( response ) {
         // Upload completed successfully, now we can get the download URL
-        uploadTask.snapshot.ref.getDownloadURL().then( function( photoUrl ) {
+        response.ref.getDownloadURL().then( function( photoUrl )
+        {
+          // set url's on user profile and logo
           app.setPhotoUrl( photoUrl );
+          app.upload.toggleUploadAnimation();
+
+          // close upload menu
           app.upload.toggleUploadMenu();
-          app.dom.uploadInput.val('');
+
+          $('#upload-input').val('');
+          $('#file-name').text('Drag files here');
+          app.state.file = false;
         });
+      })
+      .catch( function( error ) {
+        console.log( error );
       });
     },
 
+   /**
+    * Handle file selection
+    */
     fileChange : function( event ) {
-        app.state.file = this.files[0];
-    }
+      app.state.file = event.target.files[0];
+      $('#file-name').text( app.state.file.name );
+    },
 
+   /**
+    * Toggles uploading animation
+    */
+    toggleUploadAnimation : function( event ) {
+      $('#file-select .upload-button').fadeToggle( 300 );
+      $('#file-name').fadeToggle( 300 );
+      $('#file-select').toggleClass('loading');
+    },
   },
 
+ /**
+  * Launches listener for authentication state changes
+  */
   listenAuthChanges : function() {
     Auth.onAuthStateChanged( function( user ) {
-      if( user ) {
+      if( user )
+      {
+        // if user is signed, get his photo from storage
         app.state.storageRef.child(`users/${Auth.currentUser.uid}`).getDownloadURL().then( function( response ) {
+          // if photo found in storage
           app.setPhotoUrl( response );
           app.removeLoading();
         })
         .catch( function( error ) {
-          let photoUrl = user.providerData[0] ? user.providerData[0].photoURL : user.photoURL;
-  
+          // if no photo found in storage, look for photos in user's providers
+          let photoUrl = user.providerData[0] && user.providerData[0].photoURL || user.photoURL || 'static/assets/UserIcon.png';
+
           app.setPhotoUrl( photoUrl );
           app.removeLoading();
         })
@@ -105,13 +168,26 @@ var app = {
     });
   },
 
+ /**
+  * Set photo url for user logo and profile photo
+  */
   setPhotoUrl : function( photoUrl ) {
-    app.dom.userProfilePhoto.attr('src', photoUrl );
-    app.dom.userLogo.attr('src', photoUrl );
+    $('#user-profile-photo img').attr('src', photoUrl );
+    $('#user-logo').attr('src', photoUrl );
   },
 
   removeLoading : function() {
-    app.dom.userProfile.removeClass('loading');
+    $('#user-profile-photo').removeClass('loading');
+    $('#user-logo-container').removeClass('loading');
+  },
+
+ /**
+  * Logout user
+  */
+  logout : function( event ) {
+    app.toggleUserDialog();
+
+    document.location = '/logout';
   }
 }
 
