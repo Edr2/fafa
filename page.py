@@ -5,6 +5,9 @@ import datetime
 from google.appengine.ext import ndb
 from auth import AuthError, verify_id_token, create_session_cookie, verify_session_cookie, revoke_refresh_tokens
 # from firebase_admin import auth
+import google.auth.transport.requests
+HTTP_REQUEST = google.auth.transport.requests.Request()
+
 
 page = Blueprint('page', __name__, template_folder='templates')
 
@@ -49,19 +52,8 @@ def step_two():
         if token:
             return render_template('step_two.html')
     except:
-        return 'Error'
+        return redirect(url_for('page.login'))
     return False
-
-
-    if 'Authorization' not in request.headers:
-        # return 'fuck the police'
-        return ''#render_template('sign.html')
-    id_token = request.headers['Authorization'].split(' ').pop()
-    claims = google.oauth2.id_token.verify_firebase_token(
-        id_token, HTTP_REQUEST)
-    if not claims:
-        return 'Unauthorized', 401
-    # [END gae_python_verify_token]
 
     notes = query_database(claims['sub'])
 
@@ -91,7 +83,7 @@ def logout():
         response.set_cookie('session', expires=0)
         return response
     except ValueError:
-        return flask.redirect('/login')
+        return redirect('/login')
     #
     # response = make_response(redirect('/'))
     # response.set_cookie('session', expires=0)
@@ -149,6 +141,7 @@ def list_notes():
 
     return jsonify(notes)
 
+
 @page.route('/notes', methods=['POST', 'PUT'])
 def add_note():
     """
@@ -160,9 +153,13 @@ def add_note():
     """
 
     # Verify Firebase auth.
-    id_token = request.headers['Authorization'].split(' ').pop()
-    claims = google.oauth2.id_token.verify_firebase_token(
-        id_token, HTTP_REQUEST)
+    try:
+        cookie = request.cookies.get('session')
+        claims = verify_session_cookie(cookie)
+
+    except:
+        return 'Error'
+
     if not claims:
         return 'Unauthorized', 401
 
@@ -183,6 +180,19 @@ def add_note():
     note.put()
 
     return 'OK', 200
+
+
+@page.after_request
+def add_header(r):
+    """
+    Add headers to both force latest IE rendering engine or Chrome Frame,
+    and also to cache the rendered page for 10 minutes.
+    """
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
+    r.headers['Cache-Control'] = 'public, max-age=0'
+    return r
 
 
 @page.errorhandler(500)
