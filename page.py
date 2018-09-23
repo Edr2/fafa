@@ -21,12 +21,19 @@ def info_page():
 
         full_name = decoded_claims.get('name', None)
         email = decoded_claims.get('email', None)
-
         username = full_name or email
 
-        if decoded_claims:
-            return render_template('index.html', username=username)
+        ref = db.reference('users')
+        user_info = {'username': username}
+        user_record = ref.child(decoded_claims['uid']).get()
 
+        if not user_record:
+            return redirect(url_for('page.step_two'))
+
+        user_info.update(user_record)
+        # if ref.get(decoded_claims['uid']):
+
+        return render_template('index.html', user=user_info)
     except ValueError:
         return redirect(url_for('page.login'))
 
