@@ -32,6 +32,7 @@
 .navbar img {
   width: 40px;
   height: 40px;
+  border-radius: 50%;
 }
 
 .user-logo {
@@ -234,8 +235,26 @@ main {
   z-index: 1;
   transition: top 0.3s;
 }
-.user-profile-upload .upload-menu {
-  display : none;
+.upload-menu {
+  position: fixed;
+  display: none;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+}
+.upload-background {
+  width: 100%;
+  height: 100%;
+  background: #00000073;
+}
+.upload-form {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate3d( -50%, -50%, 0);
+  z-index : 1100;
 }
 .user-profile-photo:not(.loading):hover .user-profile-upload {
   top: 0;
