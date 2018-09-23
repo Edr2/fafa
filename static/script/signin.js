@@ -2,14 +2,15 @@ var Auth = firebase.auth(), form = {
   dom : {
     userForm            : $('#user-form'),
     userFormError       : $('#user-form-error'),
+    userFormSubmit      : $('#user-form-submit'),
+    socialLogin         : $('.social-login'),
     formToggle          : $('.form-toggle'),
     formToggleText      : $('.form-toggle-text'),
     formToggleContainer : $('.form-toggle-container'),
     formForgot          : $('#forgot-form'),
-    socialLogin         : $('.social-signIn'),
-    userFormSubmit      : $('#user-form-submit'),
+    toggleForgot        : $('.toggle-forgot-form'),
     forgotFormSubmit    : $('#forgot-form-submit'),
-    toggleForgot        : $('.toggle-forgot-form')
+    formSecret          : $('#secret-form')
   },
 
   state : {
@@ -33,17 +34,17 @@ var Auth = firebase.auth(), form = {
     }
   },
   init : function() {
-    if( form.dom.userForm.length == 0 ) {
-      return;
+    form.dom.formSecret.submit( this.auth.sendUserSecret );
+    
+    if( form.dom.userForm.length > 0 ) {
+      form.dom.formToggle.click( this.toggleSign );
+      form.dom.toggleForgot.click( this.toggleForgotForm );
+      form.dom.socialLogin.click( this.sendUserData );
+      form.dom.userForm.submit( this.sendUserData );
+      form.dom.formForgot.submit( this.auth.resetPassword );
+  
+      this.listenAuthChanges();
     }
-
-    form.dom.formToggle.click( this.toggleSign );
-    form.dom.toggleForgot.click( this.toggleForgotForm );
-    form.dom.socialLogin.click( this.auth.sendUserData );
-    form.dom.userForm.submit( this.sendUserData );
-    form.dom.formForgot.submit( this.auth.resetPassword );
-
-    this.listenAuthChanges();
   },
 
   toggleForgotForm : function() {
@@ -57,24 +58,7 @@ var Auth = firebase.auth(), form = {
   listenAuthChanges : function() {
     Auth.onAuthStateChanged( function( user ) {
       if( user ) {
-        let location = form.state.request.newUser ? 'step_two' : '/';
-        let remember = form.state.request.userData && form.state.request.userData.remember && form.state.request.userData.remember == 'on' ? true : false;
-
-        let authRequestCallback = function() {
-          document.location = location;
-        }
-
-        if( form.state.request.pendingCred ) {
-          user.linkAndRetrieveDataWithCredential( form.state.request.pendingCred );
-        }
-
-        user.getIdToken().then( function( idToken ) {
-          utils.sendRequest('POST', '/auth', {
-            token    : idToken,
-            remember : remember
-          },
-          authRequestCallback)
-        });
+        console.log('user : ', user );
       }
     });
   },
@@ -83,8 +67,8 @@ var Auth = firebase.auth(), form = {
     event.preventDefault();
     form.state.setLoading();
 
-    if( this.dataset.provider ) {
-      form.auth.socialSignIn();
+    if( event.target.dataset.provider ) {
+      form.auth.socialSignIn( event.target.dataset.provider );
       return;
     }
 
@@ -145,20 +129,21 @@ var Auth = firebase.auth(), form = {
 
     registerUser : function( userData ) {
       Auth.createUserWithEmailAndPassword( userData.email, userData.password )
-      .then( form.auth.handleNewUser )
+      .then( form.auth.handleAuth )
       .catch( form.auth.handleErrors );
     },
     
     emailLogin : function( userData ) {
       Auth.signInWithEmailAndPassword( userData.email, userData.password )
+      .then( form.auth.handleAuth )
       .catch( form.auth.handleErrors );    
     },
 
-    socialSignIn : function( provider ) {
-      var provider = new firebase.auth[this.dataset.provider]();
+    socialSignIn : function( providerName ) {
+      var provider = new firebase.auth[ providerName ]();
 
       Auth.signInWithPopup( provider )
-      .then( form.auth.handleNewUser )
+      .then( form.auth.handleAuth )
       .catch( form.auth.handleErrors );
     },
 
@@ -172,25 +157,64 @@ var Auth = firebase.auth(), form = {
       .catch( form.auth.handleErrors );
     },
 
-    handleNewUser : function( user ) {
+    handleAuth : function( response ) {
       let userName = $('#user-form [name="username"]').val();
-
-      form.state.request.newUser = user.additionalUserInfo.isNewUser;
+      let remember = form.state.request.userData && form.state.request.userData.remember && form.state.request.userData.remember == 'on' ? true : false;
 
       if( userName ) {
         Auth.currentUser.updateProfile({
             displayName: userName
         });
       }
+
+      if( form.state.request.pendingCred ) {
+        response.user.linkAndRetrieveDataWithCredential( form.state.request.pendingCred );
+      }
+
+      response.user.getIdToken().then( function( idToken ) {
+        utils.sendRequest('POST', '/auth', {
+          token    : idToken,
+          remember : remember
+        },
+        function() {
+          document.location = '/';
+        })
+      });
+    },
+
+    sendUserSecret : function( event ) {
+      debugger
+      form.dom.formSecret;
     }
   },
 
   toggleSign : function( e ) {
     form.state.toggleState();
 
-    form.dom.userFormSubmit.text( form.state.signUp ? 'Sign up' : 'Sign in' );
-    form.dom.formToggle.text( !form.state.signUp ? 'Sign up' : 'Sign in' );
-    form.dom.formToggleText.text( !form.state.signUp ? 'Don\'t have an account?' : 'Already registered?' );
+    let key = form.state.signUp ? 'signUp' : 'signIn';    
+    let text = {
+      signUp : {
+        userFormSubmit : 'Sign up',
+        formToggle : 'Sign in',
+        formToggleText : 'Don\'t have an account?'
+      },
+      signIn : {
+        userFormSubmit : 'Sign in',
+        formToggle : 'Sign up',
+        formToggleText : 'Already registered?'
+      }
+    }
+
+    form.dom.userFormSubmit.text( text[key].userFormSubmit );
+    form.dom.formToggle.text( text[key].formToggle );
+    form.dom.formToggleText.text( text[key].formToggleText );
+    
+    if( form.state.signUp ) {
+      form.dom.userForm.find('input.signUp').attr('required', true );
+    }
+    else {
+      form.dom.userForm.find('input.signUp').removeAttr('required');
+    }
 
     ['signUp', 'signIn'].forEach( function( className ) {
       $(`.${className}`).slideToggle( 300 );
