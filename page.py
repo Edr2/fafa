@@ -20,6 +20,7 @@ def info_page():
 
         if decoded_claims:
             return render_template('index.html', username=username)
+
     except ValueError:
         return redirect(url_for('page.login'))
 
