@@ -1,9 +1,10 @@
 import logging
 import requests
-from flask import Blueprint, request, make_response, render_template, redirect, url_for
-from datetime import timedelta
+from flask import Blueprint, request, make_response, render_template, redirect, url_for, abort, jsonify
+import datetime
 from google.appengine.ext import ndb
-from auth import verify_id_token, create_session_cookie, verify_session_cookie
+from auth import AuthError, verify_id_token, create_session_cookie, verify_session_cookie, revoke_refresh_tokens
+# from firebase_admin import auth
 
 page = Blueprint('page', __name__, template_folder='templates')
 
@@ -12,27 +13,37 @@ page = Blueprint('page', __name__, template_folder='templates')
 def info_page():
     """Returns a list of notes added by the current Firebase user."""
     try:
-        cookie = request.cookies.get('NID')
-        token = verify_session_cookie(cookie)
-        if token:
-            return render_template('index.html')
+        cookie = request.cookies.get('session')
+        decoded_claims = verify_session_cookie(cookie)
+
+        username = decoded_claims['name'] or decoded_claims['email']
+
+        if decoded_claims:
+            return render_template('index.html', username=username)
     except ValueError:
         return redirect(url_for('page.login'))
 
 
 @page.route('/auth', methods=['POST'])
 def auth():
-    token = request.values.get('token', None)
-    cookie = create_session_cookie(token, timedelta(days=1))
-    resp = make_response()
-    resp.set_cookie('NID', cookie)
-    return resp
+    token = request.form.get('token', None)
+    remember = request.form.get('remember', None)
+    days = 14 if remember else 1
+    expires_in = datetime.timedelta(days=days)
+    try:
+        session_cookie = create_session_cookie(token, expires_in=expires_in)
+        response = jsonify({'status': 'success'})
+        expires = datetime.datetime.now() + expires_in
+        response.set_cookie('session', session_cookie, expires=expires, httponly=True)
+        return response
+    except AuthError:
+        return abort(401, 'Failed to create a session cookie')
 
 
 @page.route('/step_two', methods=['GET'])
 def step_two():
     try:
-        cookie = request.cookies.get('NID')
+        cookie = request.cookies.get('session')
         token = verify_session_cookie(cookie)
         if token:
             return render_template('step_two.html')
@@ -58,8 +69,32 @@ def step_two():
 
 @page.route('/login', methods=['GET'])
 def login():
-    """Returns a list of notes added by the current Firebase user."""
-    return render_template('sign.html')
+    try:
+        cookie = request.cookies.get('session')
+        token = verify_session_cookie(cookie)
+        if token:
+            return redirect(url_for('page.info_page'))
+
+        return render_template('sign.html')
+    except ValueError:
+        return render_template('sign.html')
+
+
+@page.route('/logout', methods=['GET'])
+def logout():
+    session_cookie = request.cookies.get('session')
+    try:
+        decoded_claims = verify_session_cookie(session_cookie)
+        revoke_refresh_tokens(decoded_claims['sub'])
+        response = make_response(redirect('/login'))
+        response.set_cookie('session', expires=0)
+        return response
+    except ValueError:
+        return flask.redirect('/login')
+    #
+    # response = make_response(redirect('/'))
+    # response.set_cookie('session', expires=0)
+    # return response
 
 
 class Note(ndb.Model):
