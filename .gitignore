@@ -3,6 +3,7 @@ venv/
 credentials/
 .vscode/
 .idea/
+config.py
 
 #vim
 *.swp
