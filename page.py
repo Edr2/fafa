@@ -4,7 +4,7 @@ from flask import Blueprint, request, make_response, render_template, redirect, 
 import datetime
 from google.appengine.ext import ndb
 from auth import AuthError, verify_id_token, create_session_cookie, verify_session_cookie, revoke_refresh_tokens
-# from firebase_admin import auth
+from firebase_admin import db
 import google.auth.transport.requests
 HTTP_REQUEST = google.auth.transport.requests.Request()
 
@@ -19,7 +19,10 @@ def info_page():
         cookie = request.cookies.get('session')
         decoded_claims = verify_session_cookie(cookie)
 
-        username = decoded_claims['name'] or decoded_claims['email']
+        full_name = decoded_claims.get('name', None)
+        email = decoded_claims.get('email', None)
+
+        username = full_name or email
 
         if decoded_claims:
             return render_template('index.html', username=username)
@@ -44,7 +47,7 @@ def auth():
         return abort(401, 'Failed to create a session cookie')
 
 
-@page.route('/step_two', methods=['GET'])
+@page.route('/step-two', methods=['GET'])
 def step_two():
     try:
         cookie = request.cookies.get('session')
@@ -58,6 +61,25 @@ def step_two():
     notes = query_database(claims['sub'])
 
     return jsonify(notes)
+
+
+@page.route('/step_two', methods=['POST'])
+def save_step_two():
+    try:
+        decoded_claims = verify_session_cookie(request.cookies.get('session'))
+        token = request.form.get('token', '')
+        secret = request.form.get('secret', '')
+        ref = db.reference('users')
+        ref.set({
+            decoded_claims['uid']: {
+                'token': token,
+                'secret': secret
+            }
+        })
+
+        return jsonify({'status': 'success'})
+    except AuthError:
+        return abort(401, 'Failed to authenticate user')
 
 
 @page.route('/login', methods=['GET'])
