@@ -20,16 +20,13 @@ def index_page():
 
         full_name = decoded_claims.get('name', None)
         email = decoded_claims.get('email', None)
-        username = full_name or email
+        user_info = {'username': full_name or email}
 
-        # ref = db.reference('users')
-        user_info = {'username': username}
-        # user_record = ref.child(decoded_claims['uid']).get()
-        #
-        # if not user_record:
-        #     return redirect(url_for('page.step_two'))
-        #
-        # user_info.update(user_record)
+        ref = db.reference('users')
+        user_record = ref.child(decoded_claims['uid']).get()
+
+        if not user_record:
+            return redirect(url_for('page.step_two'))
 
         return render_template('index.html', user=user_info)
     except ValueError:
