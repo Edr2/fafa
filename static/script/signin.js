@@ -75,9 +75,9 @@ var Auth = firebase.auth(), form = {
 
     form.state.currentForm = form.dom.userForm.is(':visible') ? 'forgotForm' : 'userForm';
 
-    form.dom.userForm.toggle( 200 );
-    form.dom.formToggleContainer.toggle( 200 );
-    form.dom.forgotForm.toggle( 200 );
+    form.dom.userForm.slideToggle( 300 );
+    form.dom.formToggleContainer.slideToggle( 300 );
+    form.dom.forgotForm.slideToggle( 300 );
   },
 
  /**
@@ -101,13 +101,13 @@ var Auth = firebase.auth(), form = {
       return;
     }
 
-    // if reset is set, launch reset password 
-    if( event.target.dataset.reset ) {
+    // if forgot form is active now
+    if( form.state.currentForm == 'forgotForm' ) {
       form.auth.resetPassword( event );
       return;
     }
     
-    // if in user secret form now
+    // if secret form is active now
     if( form.state.currentForm == 'secretForm' ) {
       form.auth.sendUserSecret( event )
       return;
@@ -159,7 +159,7 @@ var Auth = firebase.auth(), form = {
             // ask user to sign with this method in order to link new provider
             if (methods[0] === 'password') {
               form.dom[form.state.currentForm].find('.error').text(
-                'This email is already registered. Please sign in with your password'
+                'This email is already registered. Please sign in with your password to link that account.'
               )
             }
             else {
@@ -222,6 +222,9 @@ var Auth = firebase.auth(), form = {
       event.preventDefault();
 
       Auth.sendPasswordResetEmail( form.dom.forgotForm.find('[type="email"]').val() )
+      .then( function( response ) {
+        
+      })
       .catch( form.auth.handleErrors );
     },
 
@@ -279,8 +282,6 @@ var Auth = firebase.auth(), form = {
       form.dom.secretForm.serializeArray().forEach( function( field ) {
         userData[field.name] = field.value;
       });
-
-      form.state.setLoading( event );
 
       utils.sendRequest('POST', '/step_two', {
         token  : userData.token,
