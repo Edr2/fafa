@@ -197,6 +197,7 @@ var app = {
       // remove current src, thus removing possible flash of old image
       $( id ).attr('src', '' );
       $( id ).one('load', app.removeLoading( id ) );
+      $( id ).one('error', app.removeLoading( id ) );
       $( id ).attr('src', photoUrl );
     });
   },
