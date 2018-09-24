@@ -1,9 +1,7 @@
 <nav class="navbar navbar-expand navbar-light fixed-top dark-grey">
-  <div class="navbar-brand">
-    <div class="d-flex align-items-center">
-      <img class="mb-1" src="{{ url_for('static', filename='assets/Logo.png') }}">
-      <h1 class="h3 mx-3 font-weight-normal light-grey">Beagle</h1>
-    </div>
+  <div class="brand">
+    <img src="{{ url_for('static', filename='assets/Logo.png') }}">
+    <h1 class="h3 mx-3 my-0 font-weight-normal light-grey">Beagle</h1>
   </div>
   <div class="h5 mb-0 current-page">
     Current Page
@@ -22,15 +20,21 @@
         </div>
         <a  href="/about" class="dropdown-element button button-light">
           <i class="fas fa-user"></i>
-          Account
+          <span>
+            Account
+          </span>
         </a>
         <a class="dropdown-element button button-light">
           <i class="fas fa-wrench"></i>
-          Settings
+          <span>
+            Settings
+          </span>
         </a>
         <a class="dropdown-element button button-light" id="logout">
           <i class="fas fa-power-off"></i>
-          Logout
+          <span>
+            Logout
+          </span>
         </a>
       </div>
     </div>
