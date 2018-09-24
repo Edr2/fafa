@@ -11,10 +11,12 @@
     </div>
     <form id="secret-form" class="form-container mt-4">
       <label for="Secret" class="sr-only">Secret</label>
-      <input type="text" class="form-control mb-3 form-control-lg" placeholder="Secret" required="" name="secret">
+      <input type="text" class="form-control mb-3 form-control-lg" placeholder="Secret"
+             required="" name="secret" value="{{user.secret}}">
 
       <label for="Token" class="sr-only">Token</label>
-      <input type="text" class="form-control mb-2 form-control-lg" placeholder="Token" required="" autofocus="" name="token">
+      <input type="text" class="form-control mb-2 form-control-lg" placeholder="Token"
+             required="" autofocus="" name="token" value="{{user.token}}">
 
       <div class="secondary error mb-3"></div>
 
