@@ -22,31 +22,41 @@
   background: #fff;
   box-shadow: 0 1px 3px #cdcdcd;
   max-height: 4em;
+  height: 100%;
   padding: 0.5em 1em;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.navbar-brand {
+.brand {
   max-width: 250px;
   flex-grow: 1;
+  overflow: hidden;
   margin-right: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
-.navbar img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+.brand img {
+  height: 100%;
+  width: auto;
 }
-
 .user-logo {
   position: relative;
   display: flex;
   flex-direction: row-reverse;
 }
 .user-logo img {
-  transition: all .3s;
-  cursor : pointer;
-  backface-visibility: hidden;
+  max-height: 40px;
+  border-radius: 50%;
+  width: auto;
+  height: 100%;
+  transform: translateX( -50% );
+  left: 50%;
+  top: 0;
+  position: absolute;
+  cursor: pointer;
+  transition: opacity 0.3s
 }
 .user-logo-container {
   width: 40px;
@@ -54,9 +64,6 @@
   border-radius: 50%;
   overflow: hidden;
   position: relative;
-}
-.user-logo img:active {
-  transform: scale( 0.95 );
 }
 .user-dropdown-container {
   display: none;
@@ -84,7 +91,7 @@
   border-style: solid;
 }
 .dropdown-header {
-  padding: 16px 16px 32px 32px;
+  padding: 16px 32px 32px 32px;
   font-size: 20px;
   color : #fff;
   background : #304ffe;
@@ -96,8 +103,8 @@
   color: inherit !important;
   text-decoration: none !important;
 }
-.dropdown-element i {
-  margin-right: 0.5em;
+.dropdown-element span {
+  margin: 0 0.5em;
 }
 .current-page {
   display: none;
@@ -156,7 +163,7 @@ main {
 .sidebar-item {
   display: flex;
   align-items: center;
-  padding: 0.5em 2em;
+  padding: 0.5em 1em;
 }
 .button {
   transition: background .3s;
@@ -312,8 +319,12 @@ main {
   opacity: 0;
 }
 .user-profile-photo img {  
-  width: 100%;
+  width: auto;
   height: 100%;
+  transform: translateX( -50% );
+  left: 50%;
+  top: 0;
+  position: absolute;
   transition: opacity 0.3s;
 }
 .user-top-info {
