@@ -325,10 +325,10 @@ var Auth = firebase.auth(), form = {
     
     // make hidden fields required when form is in sinUp state
     if( form.state.signUp ) {
-      form.dom.userForm.find('input.signUp').attr('required', true );
+      form.dom.userForm.find('.signUp-required').attr('required', true );
     }
     else {
-      form.dom.userForm.find('input.signUp').removeAttr('required');
+      form.dom.userForm.find('.signUp-required').removeAttr('required');
     }
 
     // animate toggling of signUp / signIn specific content
