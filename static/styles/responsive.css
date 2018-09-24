@@ -2,6 +2,8 @@
   .sidebar-sticky.sidebar-sticky {
     margin: 0 !important;
     position: relative !important;
+    overflow: visible !important;
+    max-height: unset !important;
   }
   .sidebar-item.sidebar-item {
     padding: 0.5em 2em;

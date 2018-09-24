@@ -126,12 +126,15 @@ main {
   display: block;
   overflow-y: auto;
   max-width: 250px;
-  background : #fafafa;
+  background: #fafafa;
   box-shadow: 5px 0px 10px 0px #cdcdcd;
   padding: 1rem 0;
   transition: margin .3s;
   position: fixed;
   z-index: 10;
+  max-height: 100%;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 .sidebar-toggle {
   font-size: 22px;
