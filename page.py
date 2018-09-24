@@ -37,7 +37,37 @@ def info_page():
         cookie = request.cookies.get('NID')
         token = verify_session_cookie(cookie)
         if token:
-            return render_template('pages/index.html', user="LALA")
+            return render_template('index.html', user="LALA")
+    except ValueError:
+        return redirect(url_for('page.login'))
+
+
+@page.route('/about', methods=['GET'])
+def about():
+    """Returns a list of notes added by the current Firebase user."""
+    try:
+        cookie = request.cookies.get('session')
+        decoded_claims = verify_session_cookie(cookie)
+
+        full_name = decoded_claims.get('name', None)
+        email = decoded_claims.get('email', None)
+        username = full_name or email
+
+        ref = db.reference('users')
+        user_info = {'username': username}
+        user_record = ref.child(decoded_claims['uid']).get()
+
+        if not user_record:
+            return redirect(url_for('page.step_two'))
+
+        user_info.update(user_record)
+        # if ref.get(decoded_claims['uid']):
+
+        return render_template('about.html', user=user_info)
+        cookie = request.cookies.get('NID')
+        token = verify_session_cookie(cookie)
+        if token:
+            return render_template('about.html', user="LALA")
     except ValueError:
         return redirect(url_for('page.login'))
 
