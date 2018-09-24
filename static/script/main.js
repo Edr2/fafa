@@ -182,8 +182,6 @@ var app = {
           app.setPhotoUrl( photoUrl );
           app.removeLoading();
         });
-
-        app.setUserName();
       }
     });
   },
@@ -204,13 +202,6 @@ var app = {
 
   removeLoading : function( id ) {
     $( id ).closest('.loading').removeClass('loading');
-  },
-
- /**
-  * Shows user's display name
-  */
-  setUserName : function() {
-    $('#user-email').text( Auth.currentUser.email );
   },
 
  /**
