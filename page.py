@@ -1,9 +1,7 @@
 import logging
-import requests
-from flask import Blueprint, request, make_response, render_template, redirect, url_for, abort, jsonify
 import datetime
-from google.appengine.ext import ndb
-from auth import AuthError, verify_id_token, create_session_cookie, verify_session_cookie, revoke_refresh_tokens
+from flask import Blueprint, request, make_response, render_template, redirect, url_for, abort, jsonify
+from auth import AuthError, create_session_cookie, verify_session_cookie, revoke_refresh_tokens
 from firebase_admin import db
 import google.auth.transport.requests
 HTTP_REQUEST = google.auth.transport.requests.Request()
@@ -35,7 +33,6 @@ def index_page():
 
 @page.route('/about', methods=['GET'])
 def about():
-    """Returns a list of notes added by the current Firebase user."""
     try:
         cookie = request.cookies.get('session')
         decoded_claims = verify_session_cookie(cookie)
@@ -135,102 +132,6 @@ def logout():
         return response
     except ValueError:
         return redirect('/login')
-    #
-    # response = make_response(redirect('/'))
-    # response.set_cookie('session', expires=0)
-    # return response
-
-
-class Note(ndb.Model):
-    """NDB model class for a user's note.
-
-    Key is user id from decrypted token.
-    """
-    friendly_id = ndb.StringProperty()
-    message = ndb.TextProperty()
-    created = ndb.DateTimeProperty(auto_now_add=True)
-
-
-# [START gae_python_query_database]
-def query_database(user_id):
-    """Fetches all notes associated with user_id.
-
-    Notes are ordered them by date created, with most recent note added
-    first.
-    """
-    ancestor_key = ndb.Key(Note, user_id)
-    query = Note.query(ancestor=ancestor_key).order(-Note.created)
-    notes = query.fetch()
-
-    note_messages = []
-
-    for note in notes:
-        note_messages.append({
-            'friendly_id': note.friendly_id,
-            'message': note.message,
-            'created': note.created
-        })
-
-    return note_messages
-# [END gae_python_query_database]
-
-
-@page.route('/notes', methods=['GET'])
-def list_notes():
-    """Returns a list of notes added by the current Firebase user."""
-
-    # Verify Firebase auth.
-    # [START gae_python_verify_token]
-    id_token = request.headers['Authorization'].split(' ').pop()
-    claims = google.oauth2.id_token.verify_firebase_token(
-        id_token, HTTP_REQUEST)
-    if not claims:
-        return 'Unauthorized', 401
-    # [END gae_python_verify_token]
-
-    notes = query_database(claims['sub'])
-
-    return jsonify(notes)
-
-
-@page.route('/notes', methods=['POST', 'PUT'])
-def add_note():
-    """
-    Adds a note to the user's notebook. The request should be in this format:
-
-        {
-            "message": "note message."
-        }
-    """
-
-    # Verify Firebase auth.
-    try:
-        cookie = request.cookies.get('session')
-        claims = verify_session_cookie(cookie)
-
-    except:
-        return 'Error'
-
-    if not claims:
-        return 'Unauthorized', 401
-
-    # [START gae_python_create_entity]
-    data = request.get_json()
-
-    # Populates note properties according to the model,
-    # with the user ID as the key name.
-    note = Note(
-        parent=ndb.Key(Note, claims['sub']),
-        message=data['message'])
-
-    # Some providers do not provide one of these so either can be used.
-    note.friendly_id = claims.get('name', claims.get('email', 'Unknown'))
-    # [END gae_python_create_entity]
-
-    # Stores note in database.
-    note.put()
-
-    return 'OK', 200
 
 
 @page.after_request
