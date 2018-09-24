@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Flask gae app{% endblock %}
+{% block content %}
+  {% include 'header.html' %}
+  <main role="main">
+    <div class="row main-container">
+      {% include 'drawer.html' %}
+      <div class="col">
+        {% block mainContent %}
+        {% endblock %}
+      </div>
+    </div>
+  </main>
+  <div class="upload-menu" id="upload-menu">
+    <div class="upload-background" id="upload-background"></div>
+    <div class="upload-form form-container">
+      <form id="upload-form">
+          <button id="file-select" class="upload-file-select" type="button">
+            <div class="upload-button">
+              <i class="fas fa-file-upload"></i>
+            </div>
+            <span class="secondary" id="file-name">
+              Drag files here
+            </span>
+          </button>
+          <input class="hidden-input" accept="image/*" id="upload-input" type="file">
+
+          <button class="btn btn-md btn-primary btn-block" type="submit">
+            Upload photo
+          </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
