@@ -11,7 +11,10 @@
       <link rel="stylesheet" href="{{ url_for('static', filename='styles/responsive.css') }}">
     {% endblock %}
   </head>
-  <body class="rtl">
+  <body>
+    <script>
+      var user = '{{ user }}';
+    </script>
     <div id="container">{% block content %}{% endblock %}</div>
 
     {% block scripts %}
