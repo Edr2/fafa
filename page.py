@@ -111,7 +111,7 @@ def save_step_two():
         token = request.form.get('token', '')
         secret = request.form.get('secret', '')
         ref = db.reference('users')
-        ref.set({
+        ref.update({
             decoded_claims['uid']: {
                 'token': token,
                 'secret': secret
