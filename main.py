@@ -1,24 +1,21 @@
 import requests_toolbelt.adapters.appengine
 requests_toolbelt.adapters.appengine.monkeypatch()
+
 from flask import Flask
 import flask_cors
 import firebase_admin
 from firebase_admin import credentials
-from firebase_admin import db
 from config import current_config
 
 
 from page import page
-
+requests_toolbelt.adapters.appengine.monkeypatch()
 
 cred = credentials.Certificate(current_config.CREDENTIALS_PATH)
 # Initialize the app with a service account, granting admin privileges
 fire_app = firebase_admin.initialize_app(cred, {
     'databaseURL': current_config.FIREBASE_REALTIME_DB_URL
 })
-
-# Use the App Engine Requests adapter. This makes sure that Requests uses
-# URLFetch.
 
 
 static_dir = '/static'
