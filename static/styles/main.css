@@ -47,16 +47,17 @@
   flex-direction: row-reverse;
 }
 .user-logo img {
-  max-height: 40px;
-  border-radius: 50%;
   width: auto;
-  height: 100%;
-  transform: translateX( -50% );
+  min-width: 100%;
+  max-width: 150%;
+  min-height: 100%;
+  max-height: 150%;
+  transform: translate( -50% , -50% );
   left: 50%;
-  top: 0;
+  top: 50%;
   position: absolute;
   cursor: pointer;
-  transition: opacity 0.3s
+  transition: opacity 0.3s;
 }
 .user-logo-container {
   width: 40px;
@@ -126,12 +127,15 @@ main {
   display: block;
   overflow-y: auto;
   max-width: 250px;
-  background : #fafafa;
+  background: #fafafa;
   box-shadow: 5px 0px 10px 0px #cdcdcd;
   padding: 1rem 0;
   transition: margin .3s;
   position: fixed;
   z-index: 10;
+  max-height: 100%;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 .sidebar-toggle {
   font-size: 22px;
@@ -318,14 +322,21 @@ main {
 .user-logo-container.loading img {
   opacity: 0;
 }
-.user-profile-photo img {  
-  width: auto;
-  height: 100%;
-  transform: translateX( -50% );
-  left: 50%;
-  top: 0;
+.profile-photo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 50%;
   position: absolute;
-  transition: opacity 0.3s;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  transform: translate( -50%, -50% );
+}
+.user-profile-photo img {  
+  flex: 1 0 auto;
+  max-height: 200%;
 }
 .user-top-info {
   padding: 0 1em;
