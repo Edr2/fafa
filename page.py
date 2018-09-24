@@ -14,7 +14,7 @@ page = Blueprint('page', __name__, template_folder='templates/pages')
 def index_page():
     try:
         cookie = request.cookies.get('session')
-        decoded_claims = verify_session_cookie(cookie)
+        decoded_claims = verify_session_cookie(cookie, check_revoked=True)
 
         full_name = decoded_claims.get('name', None)
         email = decoded_claims.get('email', None)
@@ -27,7 +27,7 @@ def index_page():
             return redirect(url_for('page.step_two'))
 
         return render_template('index.html', user=user_info)
-    except ValueError:
+    except (AuthError, ValueError):
         return redirect(url_for('page.login'))
 
 
@@ -35,7 +35,7 @@ def index_page():
 def about():
     try:
         cookie = request.cookies.get('session')
-        decoded_claims = verify_session_cookie(cookie)
+        decoded_claims = verify_session_cookie(cookie, check_revoked=True)
 
         full_name = decoded_claims.get('name', None)
         email = decoded_claims.get('email', None)
@@ -51,7 +51,7 @@ def about():
         user_info.update(user_record)
 
         return render_template('about.html', user=user_info)
-    except ValueError:
+    except (AuthError, ValueError):
         return redirect(url_for('page.login'))
 
 
@@ -86,7 +86,6 @@ def step_two():
         return render_template('step_two.html', user=user_record)
     except:
         return redirect(url_for('page.login'))
-    return False
 
 
 @page.route('/step_two', methods=['POST'])
@@ -112,12 +111,12 @@ def save_step_two():
 def login():
     try:
         cookie = request.cookies.get('session')
-        token = verify_session_cookie(cookie)
+        token = verify_session_cookie(cookie, check_revoked=True)
         if token:
             return redirect(url_for('page.index_page'))
 
         return render_template('sign.html')
-    except ValueError:
+    except (ValueError, AuthError):
         return render_template('sign.html')
 
 
