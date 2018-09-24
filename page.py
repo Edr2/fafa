@@ -13,8 +13,7 @@ page = Blueprint('page', __name__, template_folder='templates/pages')
 
 
 @page.route('/', methods=['GET'])
-def info_page():
-    """Returns a list of notes added by the current Firebase user."""
+def index_page():
     try:
         cookie = request.cookies.get('session')
         decoded_claims = verify_session_cookie(cookie)
@@ -23,21 +22,16 @@ def info_page():
         email = decoded_claims.get('email', None)
         username = full_name or email
 
-        ref = db.reference('users')
+        # ref = db.reference('users')
         user_info = {'username': username}
-        user_record = ref.child(decoded_claims['uid']).get()
-
-        if not user_record:
-            return redirect(url_for('page.step_two'))
-
-        user_info.update(user_record)
-        # if ref.get(decoded_claims['uid']):
+        # user_record = ref.child(decoded_claims['uid']).get()
+        #
+        # if not user_record:
+        #     return redirect(url_for('page.step_two'))
+        #
+        # user_info.update(user_record)
 
         return render_template('index.html', user=user_info)
-        cookie = request.cookies.get('NID')
-        token = verify_session_cookie(cookie)
-        if token:
-            return render_template('index.html', user="LALA")
     except ValueError:
         return redirect(url_for('page.login'))
 
@@ -61,13 +55,8 @@ def about():
             return redirect(url_for('page.step_two'))
 
         user_info.update(user_record)
-        # if ref.get(decoded_claims['uid']):
 
         return render_template('about.html', user=user_info)
-        cookie = request.cookies.get('NID')
-        token = verify_session_cookie(cookie)
-        if token:
-            return render_template('about.html', user="LALA")
     except ValueError:
         return redirect(url_for('page.login'))
 
@@ -92,16 +81,18 @@ def auth():
 def step_two():
     try:
         cookie = request.cookies.get('session')
-        token = verify_session_cookie(cookie)
-        if token:
-            return render_template('step_two.html')
+        decoded_claims = verify_session_cookie(cookie)
+
+        if not decoded_claims:
+            return redirect(url_for('page.login'))
+
+        ref = db.reference('users')
+        user_record = ref.child(decoded_claims['uid']).get()
+
+        return render_template('step_two.html', user=user_record)
     except:
         return redirect(url_for('page.login'))
     return False
-
-    notes = query_database(claims['sub'])
-
-    return jsonify(notes)
 
 
 @page.route('/step_two', methods=['POST'])
@@ -129,7 +120,7 @@ def login():
         cookie = request.cookies.get('session')
         token = verify_session_cookie(cookie)
         if token:
-            return redirect(url_for('page.info_page'))
+            return redirect(url_for('page.index_page'))
 
         return render_template('sign.html')
     except ValueError:
