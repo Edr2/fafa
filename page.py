@@ -9,7 +9,7 @@ import google.auth.transport.requests
 HTTP_REQUEST = google.auth.transport.requests.Request()
 
 
-page = Blueprint('page', __name__, template_folder='templates')
+page = Blueprint('page', __name__, template_folder='templates/pages')
 
 
 @page.route('/', methods=['GET'])
@@ -37,7 +37,7 @@ def info_page():
         cookie = request.cookies.get('NID')
         token = verify_session_cookie(cookie)
         if token:
-            return render_template('index.html', user="LALA")
+            return render_template('pages/index.html', user="LALA")
     except ValueError:
         return redirect(url_for('page.login'))
 
