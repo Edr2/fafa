@@ -71,6 +71,8 @@
 .secret-form-title {
   margin: 3em auto 2em;
   padding-bottom: 2em;
+  max-width: 400px;
+  text-align: center;
 }
 .form-toggle-container {
   display: flex;

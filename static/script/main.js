@@ -17,15 +17,33 @@ var app = {
  /**
   * Toggles sidebar visibility
   */
-  toggleSidebar : function() {
+  toggleSidebar : function( event ) {
+    event.stopPropagation();
+
     $('#sidebar').toggleClass('hidden');
   },
 
-    /**
+  /**
    * Toggles user dialog visibility
    */
-  toggleUserDialog : function() {
+  toggleUserDialog : function( e ) {
+    e && e.stopPropagation();
+
     $('#user-dialog').fadeToggle( 300 );
+
+    app.setCloseDialogListener( '#user-dialog', 'fadeOut', 300 );
+  },
+
+  setCloseDialogListener( id, action, arg ) {
+    let closeDialog = function( event ) {
+      if( $( id ).is( $( event.target ) ) || $( id ).has( $( event.target ) ).length > 0 ) {
+        return;
+      }
+      $( id )[action]( arg );
+      $( 'body' ).off(`click.${id}`);
+    }
+
+    $( 'body' ).on(`click.${id}`, closeDialog );
   },
 
  /**
@@ -160,10 +178,12 @@ var app = {
         .catch( function( error ) {
           // if no photo found in storage, look for photos in user's providers
           let photoUrl = user.providerData[0] && user.providerData[0].photoURL || user.photoURL || 'static/assets/UserIcon.png';
-
+          
           app.setPhotoUrl( photoUrl );
           app.removeLoading();
-        })
+        });
+
+        app.setUserName();
       }
     });
   },
@@ -172,13 +192,24 @@ var app = {
   * Set photo url for user logo and profile photo
   */
   setPhotoUrl : function( photoUrl ) {
-    $('#user-profile-photo img').attr('src', photoUrl );
-    $('#user-logo').attr('src', photoUrl );
+    ['#user-profile-photo img', '#user-logo'].forEach( function( id )
+    {
+      // remove current src, thus removing possible flash of old image
+      $( id ).attr('src', '' );
+      $( id ).one('load', app.removeLoading( id ) );
+      $( id ).attr('src', photoUrl );
+    });
   },
 
-  removeLoading : function() {
-    $('#user-profile-photo').removeClass('loading');
-    $('#user-logo-container').removeClass('loading');
+  removeLoading : function( id ) {
+    $( id ).parent().removeClass('loading');
+  },
+
+ /**
+  * Shows user's display name
+  */
+  setUserName : function() {
+    $('#user-email').text( Auth.currentUser.email );
   },
 
  /**
