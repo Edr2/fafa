@@ -78,7 +78,7 @@
   content: '';
   position: absolute;
   top: -10px;
-  right: 15px;
+  right: 10px;
   border-width: 0 10px 14px 10px;
   border-color: transparent transparent #304ffe transparent;
   border-style: solid;
@@ -92,7 +92,9 @@
 }
 .dropdown-element {
   padding: 1em 2em;
-  cursor : pointer;
+  cursor: pointer;
+  color: inherit !important;
+  text-decoration: none !important;
 }
 .dropdown-element i {
   margin-right: 0.5em;
@@ -390,6 +392,14 @@ body.rtl .sidebar-sticky.hidden {
 }
 body.rtl .current-page {
   margin-left: auto;
+}
+body.rtl .user-dropdown-container {
+  left: 0;
+  right: unset;
+}
+body.rtl .user-dropdown-container::before {
+  left: 10px;
+  right: unset;
 }
 body:not(.rtl) .current-page {
   margin-right: auto;

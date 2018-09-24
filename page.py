@@ -16,7 +16,6 @@ page = Blueprint('page', __name__, template_folder='templates')
 def info_page():
     """Returns a list of notes added by the current Firebase user."""
     try:
-<<<<<<< Updated upstream
         cookie = request.cookies.get('session')
         decoded_claims = verify_session_cookie(cookie)
 
@@ -35,15 +34,10 @@ def info_page():
         # if ref.get(decoded_claims['uid']):
 
         return render_template('index.html', user=user_info)
-=======
         cookie = request.cookies.get('NID')
         token = verify_session_cookie(cookie)
         if token:
             return render_template('index.html', user="LALA")
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     except ValueError:
         return redirect(url_for('page.login'))
 
