@@ -159,13 +159,13 @@ var Auth = firebase.auth(), form = {
             // ask user to sign with this method in order to link new provider
             if (methods[0] === 'password') {
               form.dom[form.state.currentForm].find('.error').text(
-                'This email is already registered. Please sign in with your password to link that account.'
+                'This email is already registered. Please sign in with your password to link that account'
               )
             }
             else {
               var provider = methods[0].indexOf('facebook') !== -1 ? 'facebook' : 'google';
 
-              form.dom[form.state.currentForm].find('.error').text(`This email is already associated with ${provider} account. Please sign in to link that account.`
+              form.dom[form.state.currentForm].find('.error').text(`This email is already associated with ${provider} account. Please sign in to link that account`
               )
             }
             form.state.removeLoading();

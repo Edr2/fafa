@@ -202,7 +202,7 @@ var app = {
   },
 
   removeLoading : function( id ) {
-    $( id ).parent().removeClass('loading');
+    $( id ).closest('.loading').removeClass('loading');
   },
 
  /**
