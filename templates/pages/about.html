@@ -9,7 +9,9 @@
     </div>
     <div class="user-top-section">
       <div class="user-profile-photo loading" id="user-profile-photo">
-        <img src="{{ url_for('static', filename='assets/UserIcon.png') }}" alt="User profile photo">
+        <div class="profile-photo-container">
+          <img src="{{ url_for('static', filename='assets/UserIcon.png') }}" alt="User profile photo">
+        </div>
         <div class="user-profile-upload">
           <div class="upload-button" id="upload-button">
             <i class="fas fa-file-upload"></i>
