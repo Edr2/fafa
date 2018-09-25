@@ -27,8 +27,10 @@ def index_page():
             return redirect(url_for('page.step_two'))
 
         return render_template('index.html', user=user_info)
-    except (AuthError, ValueError):
+    except AuthError:
         return redirect(url_for('page.login'))
+    except ValueError as e:
+        return abort(401, e.message)
 
 
 @page.route('/about', methods=['GET'])
