@@ -131,11 +131,14 @@ main {
   box-shadow: 5px 0px 10px 0px #cdcdcd;
   padding: 1rem 0;
   transition: margin .3s;
+  direction: rtl;
   position: fixed;
+  right: 0;
   z-index: 10;
-  max-height: 100%;
-  overflow-y: scroll;
-  -webkit-overflow-scrolling: touch;
+  min-height: 100%
+}
+.sidebar-sticky.hidden {
+  margin-right: -250px;
 }
 .sidebar-toggle {
   font-size: 22px;
@@ -155,8 +158,9 @@ main {
 }
 .sidebar-subheader {
   padding: 1em;
-  user-select : none;
+  user-select: none;
   text-transform: uppercase;
+  text-align: right;
 }
 .sidebar-section {
   display: flex;
@@ -412,9 +416,6 @@ main {
 body.rtl .confirm {
   margin-right: 0.5em;
 }
-body.rtl .sidebar-sticky.hidden {
-  margin-right: -250px;
-}
 body.rtl .current-page {
   margin-left: auto;
 }
@@ -431,7 +432,4 @@ body:not(.rtl) .current-page {
 }
 body:not(.rtl) .confirm {
   margin-left: 0.5em;
-}
-body:not(.rtl) .sidebar-sticky.hidden {
-  margin-left: -250px;
 }
