@@ -11,7 +11,6 @@ class Config:
     FIREBASE_REALTIME_DB_URL = None
     CREDENTIALS_PATH = 'credentials/serviceAccountKey.json'
 
-
 class DevelopmentConfig(Config):
     pass
 
