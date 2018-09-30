@@ -14,7 +14,9 @@ page = Blueprint('page', __name__, template_folder='templates/pages')
 def index_page():
     try:
         cookie = request.cookies.get('session')
-        decoded_claims = verify_session_cookie(cookie, check_revoked=True)
+        if not cookie:
+            raise AuthError(1, 'User not authenticated')
+        decoded_claims = verify_session_cookie(cookie)
 
         full_name = decoded_claims.get('name', None)
         email = decoded_claims.get('email', None)
@@ -29,14 +31,14 @@ def index_page():
         return render_template('index.html', user=user_info)
     except AuthError:
         return redirect(url_for('page.login'))
-    except ValueError as e:
-        return abort(401, e.message)
 
 
 @page.route('/about', methods=['GET'])
 def about():
     try:
         cookie = request.cookies.get('session')
+        if not cookie:
+            raise AuthError(1, 'User not authenticated')
         decoded_claims = verify_session_cookie(cookie, check_revoked=True)
 
         full_name = decoded_claims.get('name', None)
@@ -77,6 +79,8 @@ def auth():
 def step_two():
     try:
         cookie = request.cookies.get('session')
+        if not cookie:
+            raise AuthError(1, 'User not authenticated')
         decoded_claims = verify_session_cookie(cookie)
 
         if not decoded_claims:
