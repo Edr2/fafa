@@ -113,7 +113,9 @@
 .error {
   color : #d34836;
 }
-
+.success {
+  color: #67c960;
+}
 main {
   height: 100%;
 }

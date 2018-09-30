@@ -223,7 +223,13 @@ var Auth = firebase.auth(), form = {
 
       Auth.sendPasswordResetEmail( form.dom.forgotForm.find('[type="email"]').val() )
       .then( function( response ) {
+        form.state.removeLoading();
         
+        $('.success').text('Please check your email in order to reset password');
+
+        setTimeout( function() {
+          $('.success').text('');
+        }, 3000);
       })
       .catch( form.auth.handleErrors );
     },
