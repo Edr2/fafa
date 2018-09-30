@@ -16,7 +16,7 @@ def index_page():
         cookie = request.cookies.get('session')
         if not cookie:
             raise AuthError(1, 'User not authenticated')
-        decoded_claims = verify_session_cookie(cookie)
+        decoded_claims = verify_session_cookie(cookie, check_revoked=True)
 
         full_name = decoded_claims.get('name', None)
         email = decoded_claims.get('email', None)
