@@ -8,7 +8,7 @@ class Config:
     def __init__(self):
         pass
 
-    FIREBASE_REALTIME_DB_URL = os.getenv('FR_REALTIME_DB', None)
+    FIREBASE_REALTIME_DB_URL = os.getenv('FIREBASE_REALTIME_DB', None)
     CREDENTIALS_PATH = 'credentials/serviceAccountKey.json'
 
 
